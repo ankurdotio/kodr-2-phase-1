@@ -1,5 +1,6 @@
 import React from 'react'
-import "./App.css"
+import './App.css'
+import './theme.css'
 import AppRoutes from './AppRoutes'
 
 export const App = () => {
@@ -9,3 +10,5 @@ export const App = () => {
     </div>
   )
 }
+
+export default App
