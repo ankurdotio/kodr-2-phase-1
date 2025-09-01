@@ -1,0 +1,65 @@
+/* Seller Product Create form styles */
+
+.product-create-wrapper { width:100%; max-width: 880px; margin: 0 auto; padding: clamp(1rem,3vw,2.25rem) clamp(1rem,3vw,2.25rem) 4rem; display:flex; flex-direction:column; gap:1.75rem; }
+.product-create-wrapper h1 { font-size: clamp(1.5rem,3vw,2.1rem); font-weight:600; letter-spacing:-.02em; }
+.product-create-sub { font-size:.85rem; color: var(--color-text-soft); }
+
+.pc-form { display:flex; flex-direction:column; gap:1.25rem; }
+.pc-grid { display:grid; gap:1.25rem; grid-template-columns: 1fr; }
+@media (min-width: 900px) { .pc-grid { grid-template-columns: 1fr 1fr; } }
+
+.pc-field { display:flex; flex-direction:column; gap:.45rem; }
+.pc-field.inline { flex-direction:row; align-items:center; gap:.75rem; }
+.pc-field label { font-size:.7rem; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color: var(--color-text-soft); }
+
+.pc-field input[type="text"],
+.pc-field input[type="number"],
+.pc-field textarea,
+.pc-field select {
+  background: var(--color-bg-alt);
+  border:1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding:.75rem .85rem;
+  font-size:.85rem;
+  color: var(--color-text);
+  resize: vertical;
+  min-height: 46px;
+  outline:none;
+  transition: border-color var(--transition-base), background var(--transition-base), box-shadow var(--transition-base);
+}
+.pc-field textarea { min-height: 140px; line-height:1.4; }
+.pc-field input:focus, .pc-field textarea:focus, .pc-field select:focus { border-color: var(--color-brand); background: var(--color-surface); box-shadow: var(--focus-ring); }
+.pc-field input:hover, .pc-field textarea:hover, .pc-field select:hover { border-color: var(--color-brand); }
+
+.inline-group { display:flex; gap:.75rem; flex-wrap:wrap; }
+.inline-group .pc-field { flex:1 1 160px; }
+
+.images-uploader { display:flex; flex-direction:column; gap:.75rem; }
+.images-dropzone { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.5rem; padding:1.5rem; border:2px dashed var(--color-border); border-radius: var(--radius-lg); background: var(--color-bg-alt); text-align:center; font-size:.7rem; color: var(--color-text-soft); transition:border-color var(--transition-base), background var(--transition-base); }
+.images-dropzone:hover { border-color: var(--color-brand); }
+.images-dropzone input { position:absolute; inset:0; opacity:0; cursor:pointer; }
+
+.images-grid { display:grid; gap:.75rem; grid-template-columns: repeat(auto-fill,minmax(110px,1fr)); }
+.img-preview { position:relative; border:1px solid var(--color-border); border-radius: var(--radius-md); overflow:hidden; background: var(--color-bg-alt); aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; }
+.img-preview img { width:100%; height:100%; object-fit:cover; }
+.remove-img { position:absolute; top:4px; right:4px; background: rgba(0,0,0,.55); color:#fff; border:none; width:24px; height:24px; display:flex; align-items:center; justify-content:center; font-size:14px; border-radius:6px; cursor:pointer; backdrop-filter: blur(3px); }
+.remove-img:hover { background: rgba(0,0,0,.75); }
+
+.divider { height:1px; background: linear-gradient(90deg, transparent, var(--color-border), transparent); margin: .5rem 0 0; border:0; }
+
+.actions-bar { display:flex; gap:.75rem; flex-wrap:wrap; justify-content:flex-end; }
+.btn { --_bg: var(--color-brand); --_bg2: var(--color-brand-accent); --_color:#fff; font-size:.8rem; font-weight:600; letter-spacing:.04em; border:none; border-radius: var(--radius-md); padding:.85rem 1.2rem; cursor:pointer; background: linear-gradient(135deg,var(--_bg),var(--_bg2)); color: var(--_color); box-shadow: 0 2px 4px rgba(0,0,0,.15),0 4px 14px -4px rgba(0,0,0,.25); transition: transform var(--transition-base), box-shadow var(--transition-base); }
+.btn:hover { transform:translateY(-2px); box-shadow:0 5px 18px -4px rgba(0,0,0,.25),0 3px 6px rgba(0,0,0,.2); }
+.btn:active { transform:translateY(0); }
+.btn.secondary { --_bg: var(--color-bg-alt); --_bg2: var(--color-surface); --_color: var(--color-text); border:1px solid var(--color-border); box-shadow: var(--shadow-sm); }
+.btn.secondary:hover { box-shadow: var(--shadow-md); }
+.btn:focus-visible { outline:none; box-shadow: var(--focus-ring); }
+
+.help-text { font-size:.65rem; color: var(--color-text-soft); line-height:1.3; }
+.error-text { color: var(--color-danger); font-size:.65rem; font-weight:600; }
+
+@media (prefers-color-scheme: dark) {
+  .images-dropzone { background: var(--color-surface); }
+}
+
+.product-create-wrapper.role-seller { --color-brand: var(--color-seller); --color-brand-accent: var(--color-seller-accent); --color-brand-soft: var(--color-seller-soft); }

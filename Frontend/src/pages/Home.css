@@ -1,0 +1,29 @@
+/* Home products listing styles */
+
+.home-shell { padding: clamp(1rem, 2.5vw, 2.25rem); max-width: 1440px; margin:0 auto; display:flex; flex-direction:column; gap:2rem; }
+.home-hero { display:flex; flex-direction:column; gap:.9rem; }
+.home-title { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight:600; letter-spacing:-.025em; }
+.home-sub { font-size:.95rem; max-width:780px; line-height:1.45; color: var(--color-text-soft); }
+
+.products-toolbar { display:flex; flex-wrap:wrap; gap:.75rem; align-items:center; justify-content:space-between; }
+.filters { display:flex; gap:.5rem; flex-wrap:wrap; }
+
+.filters input[type="search"], .filters select { background: var(--color-bg-alt); border:1px solid var(--color-border); padding:.65rem .75rem; font-size:.75rem; border-radius: var(--radius-md); outline:none; }
+.filters input:focus, .filters select:focus { border-color: var(--color-brand); box-shadow: var(--focus-ring); background: var(--color-surface); }
+
+.products-grid { display:grid; gap:1.15rem; grid-template-columns: repeat(auto-fill,minmax(200px,1fr)); }
+.p-card { background: var(--color-surface); border:1px solid var(--color-border); border-radius: var(--radius-lg); overflow:hidden; display:flex; flex-direction:column; position:relative; box-shadow: var(--shadow-sm); transition: box-shadow var(--transition-base), transform var(--transition-base); }
+.p-card:hover { box-shadow: var(--shadow-md); transform: translateY(-3px); }
+.p-thumb { aspect-ratio: 4/3; width:100%; object-fit:cover; background: var(--color-bg-alt); }
+.p-body { padding:.75rem .85rem 1rem; display:flex; flex-direction:column; gap:.45rem; }
+.p-title { font-size:.9rem; font-weight:600; line-height:1.25; }
+.p-desc { font-size:.65rem; line-height:1.3; color: var(--color-text-soft); height:2em; overflow:hidden; }
+.p-price-row { display:flex; align-items:center; justify-content:space-between; font-size:.65rem; letter-spacing:.05em; }
+.p-price { font-weight:600; color: var(--color-brand); }
+.p-stock { color: var(--color-text-soft); }
+.p-stock.low { color: var(--color-danger); }
+
+.empty { text-align:center; padding:3rem 1rem; border:2px dashed var(--color-border); border-radius: var(--radius-lg); color: var(--color-text-soft); }
+.empty strong { display:block; margin-bottom:.5rem; font-size:1rem; color: var(--color-text); }
+
+@media (prefers-color-scheme: dark) { .p-card:hover { transform: translateY(-2px); } }

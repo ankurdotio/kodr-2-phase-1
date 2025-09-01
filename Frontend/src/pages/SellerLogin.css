@@ -1,0 +1,8 @@
+/* Seller Login specific tweaks */
+.auth-card.seller-login::before { background: radial-gradient(circle at 85% 12%, var(--color-brand-soft), transparent 60%); }
+.seller-badge { position: absolute; top: .85rem; right: .95rem; font-size: .6rem; letter-spacing: .08em; font-weight: 700; background: var(--color-brand); color:#fff; padding: .35rem .55rem; border-radius: 999px; box-shadow: 0 0 0 3px rgba(0,0,0,0.05); }
+
+/* Forgot password link styling (mirrors user login) */
+.seller-forgot { font-size: .7rem; text-align: right; margin-top: -0.25rem; margin-bottom: .25rem; }
+.seller-forgot a { color: var(--color-text-soft); }
+.seller-forgot a:hover { color: var(--color-brand); }

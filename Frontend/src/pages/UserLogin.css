@@ -1,0 +1,10 @@
+/* User Login Page specific styles (mirrors register styling) */
+
+/* Only page-specific overrides/additions if needed */
+.auth-card.login-card::before {
+  background: radial-gradient(circle at 90% 10%, var(--color-brand-soft), transparent 65%);
+}
+
+.forgot-link { font-size: .75rem; text-align: right; margin-top: -0.35rem; }
+.forgot-link a { color: var(--color-text-soft); }
+.forgot-link a:hover { color: var(--color-brand); }
