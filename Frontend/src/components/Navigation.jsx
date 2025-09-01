@@ -1,13 +1,27 @@
-import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
+import { useEffect, useState, useCallback } from 'react';
 
 export default function Navigation() {
   const { pathname } = useLocation();
-  const navigate = useNavigate();
   const isSeller = pathname.startsWith('/seller');
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
-  useEffect(() => { setMenuOpen(false); }, [pathname]);
+  useEffect(() => { setDrawerOpen(false); }, [pathname]);
+
+  const handleEsc = useCallback((e) => {
+    if (e.key === 'Escape') setDrawerOpen(false);
+  }, []);
+
+  useEffect(() => {
+    if (drawerOpen) {
+      document.addEventListener('keydown', handleEsc);
+      document.documentElement.style.overflow = 'hidden';
+    } else {
+      document.removeEventListener('keydown', handleEsc);
+      document.documentElement.style.overflow = '';
+    }
+    return () => document.removeEventListener('keydown', handleEsc);
+  }, [drawerOpen, handleEsc]);
 
   const userLinks = [ { to: '/home', label: 'Home' } ];
   const sellerLinks = [
@@ -16,37 +30,47 @@ export default function Navigation() {
   ];
   const links = isSeller ? sellerLinks : userLinks;
 
-  function switchRole(role) {
-    if (role === 'seller' && !isSeller) navigate('/seller/dashboard');
-    if (role === 'user' && isSeller) navigate('/home');
-  }
+  // Role switch removed per request; navigation reflects current path only.
 
   return (
     <nav className={`site-nav ${isSeller ? 'role-seller':''}`} aria-label="Primary">
       <div className="nav-inner">
-        <button className="menu-btn" aria-label="Toggle menu" aria-expanded={menuOpen} onClick={()=>setMenuOpen(o=>!o)}>
+        <button className="menu-btn" aria-label="Toggle menu" aria-controls="mobile-drawer" aria-expanded={drawerOpen} onClick={()=>setDrawerOpen(o=>!o)}>
           <span /><span /><span />
         </button>
-        <a href={isSeller ? '/seller/dashboard' : '/home'} className="brand" aria-label="Site home">
-          Shop<span>{isSeller ? 'SELLER' : 'USER'}</span>
-        </a>
-        <ul className={`nav-links ${menuOpen ? 'open':''}`} role="menubar">
+        <a href={isSeller ? '/seller/dashboard' : '/home'} className="brand" aria-label="Site home">Shop</a>
+        <ul className="nav-links" role="menubar">
           {links.map(link => (
-            <li key={link.to} role="none">
-              <NavLink to={link.to} role="menuitem" end>{link.label}</NavLink>
-            </li>
+            <li key={link.to} role="none"><NavLink to={link.to} role="menuitem" end>{link.label}</NavLink></li>
           ))}
         </ul>
         <div className="spacer" />
-        <div className="role-toggle" role="tablist" aria-label="Role switch">
-          <button type="button" className={!isSeller ? 'active':''} role="tab" aria-selected={!isSeller} onClick={()=>switchRole('user')}>User</button>
-          <button type="button" className={isSeller ? 'active':''} role="tab" aria-selected={isSeller} onClick={()=>switchRole('seller')}>Seller</button>
-        </div>
         <div className="auth-links">
           {!isSeller && <a href="/user/login">Login</a>}
           {isSeller && <a href="/seller/login">Login</a>}
         </div>
       </div>
+
+      {/* Mobile drawer */}
+      <div className={`nav-drawer-backdrop ${drawerOpen ? 'open':''}`} onClick={()=>setDrawerOpen(false)} />
+      <aside id="mobile-drawer" className={`nav-drawer ${drawerOpen ? 'open':''}`} aria-hidden={!drawerOpen} aria-label="Mobile navigation">
+        <header>
+          <a href={isSeller ? '/seller/dashboard' : '/home'} className="brand">Shop</a>
+          <button className="close-drawer" aria-label="Close menu" onClick={()=>setDrawerOpen(false)}>×</button>
+        </header>
+        <nav>
+          <div className="drawer-section-title">Navigation</div>
+          <ul className="drawer-links" role="menubar">
+            {links.map(link => (
+              <li key={link.to} role="none"><NavLink to={link.to} role="menuitem" end>{link.label}</NavLink></li>
+            ))}
+          </ul>
+        </nav>
+        <div className="drawer-auth">
+          {!isSeller && <a href="/user/login">Login</a>}
+          {isSeller && <a href="/seller/login">Login</a>}
+        </div>
+      </aside>
     </nav>
   );
 }
