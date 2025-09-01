@@ -27,7 +27,6 @@ function App() {
         <Route element={<AppLayout />}> 
           <Route path="/home" element={<Home />} />
           <Route path="/product/:id" element={<ProductDetails />} />
-          <Route path="/product-details" element={<ProductDetails />} />
           <Route path="/seller/dashboard" element={<SellerDashboard />} />
           <Route path="/seller/products/create" element={<SellerProductCreate />} />
         </Route>

@@ -22,4 +22,8 @@ router.get("/seller",
 
 )
 
+router.get("/",
+    productController.getAllProducts
+)
+
 module.exports = router;

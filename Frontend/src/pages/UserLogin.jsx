@@ -2,20 +2,36 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './UserLogin.css';
 import './UserRegister.css'; // reuse base auth styles
+import axios from 'axios';
 
 export default function UserLogin() {
-  const [form, setForm] = useState({ identifier: '', password: '' });
+  const [ form, setForm ] = useState({ identifier: '', password: '' });
   const navigate = useNavigate();
   const role = 'user';
 
   function handleChange(e) {
     const { name, value } = e.target;
-    setForm(f => ({ ...f, [name]: value }));
+    setForm(f => ({ ...f, [ name ]: value }));
   }
 
   function handleSubmit(e) {
     e.preventDefault();
-    // UI only – submission logic intentionally omitted.
+
+    const data = { password: form.password }
+
+    if (form.identifier.includes('@')) {
+      data.email = form.identifier
+    } else {
+      data.username = form.identifier
+    }
+
+    axios.post("http://localhost:3000/api/auth/user/login", data,{
+      withCredentials: true
+    })
+    .then(response => {
+      console.log(response.data)
+      navigate('/home');
+    })
   }
 
   function switchRole(nextRole) {
@@ -27,8 +43,8 @@ export default function UserLogin() {
     <div className="auth-wrapper">
       <div className="auth-card login-card role-user" role="region" aria-labelledby="login-heading">
         <div className="role-switch" role="tablist" aria-label="Account type">
-          <button type="button" role="tab" aria-selected={role==='user'} className={role==='user' ? 'active' : ''} onClick={() => switchRole('user')}>User</button>
-          <button type="button" role="tab" aria-selected={role==='seller'} className={role==='seller' ? 'active' : ''} onClick={() => switchRole('seller')}>Seller</button>
+          <button type="button" role="tab" aria-selected={role === 'user'} className={role === 'user' ? 'active' : ''} onClick={() => switchRole('user')}>User</button>
+          <button type="button" role="tab" aria-selected={role === 'seller'} className={role === 'seller' ? 'active' : ''} onClick={() => switchRole('seller')}>Seller</button>
         </div>
         <header className="auth-header">
           <h1 id="login-heading" className="auth-title">Sign in</h1>
@@ -64,7 +80,7 @@ export default function UserLogin() {
           <p className="forgot-link"><a href="#">Forgot password?</a></p>
           <button type="submit" className="submit-btn">Sign in</button>
         </form>
-  <p className="switch-auth">New here? <a href="/user/register">Create an account</a></p>
+        <p className="switch-auth">New here? <a href="/user/register">Create an account</a></p>
       </div>
     </div>
   );

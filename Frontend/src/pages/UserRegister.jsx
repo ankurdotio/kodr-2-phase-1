@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './UserRegister.css';
+import axios from 'axios';
 
 export default function UserRegister() {
-  const [form, setForm] = useState({
+  const [ form, setForm ] = useState({
     username: '',
     firstName: '',
     lastName: '',
@@ -15,12 +16,25 @@ export default function UserRegister() {
 
   function handleChange(e) {
     const { name, value } = e.target;
-    setForm(f => ({ ...f, [name]: value }));
+    setForm(f => ({ ...f, [ name ]: value }));
   }
 
   function handleSubmit(e) {
     e.preventDefault();
-    // UI only – submission logic intentionally omitted.
+
+    axios.post("http://localhost:3000/api/auth/user/register", {
+      username: form.username,
+      fullName: {
+        firstName: form.firstName,
+        lastName: form.lastName
+      },
+      email: form.email,
+      password: form.password
+    },{withCredentials:true}).then(response => {
+      console.log(response.data)
+      navigate('/home');
+    })
+
   }
 
   function switchRole(nextRole) {
@@ -32,8 +46,8 @@ export default function UserRegister() {
     <div className="auth-wrapper">
       <div className="auth-card role-user" role="region" aria-labelledby="register-heading">
         <div className="role-switch" role="tablist" aria-label="Account type">
-          <button type="button" role="tab" aria-selected={role==='user'} className={role==='user' ? 'active' : ''} onClick={() => switchRole('user')}>User</button>
-          <button type="button" role="tab" aria-selected={role==='seller'} className={role==='seller' ? 'active' : ''} onClick={() => switchRole('seller')}>Seller</button>
+          <button type="button" role="tab" aria-selected={role === 'user'} className={role === 'user' ? 'active' : ''} onClick={() => switchRole('user')}>User</button>
+          <button type="button" role="tab" aria-selected={role === 'seller'} className={role === 'seller' ? 'active' : ''} onClick={() => switchRole('seller')}>Seller</button>
         </div>
         <header className="auth-header">
           <h1 id="register-heading" className="auth-title">Create account</h1>
@@ -55,34 +69,34 @@ export default function UserRegister() {
             />
           </div>
 
-            <div className="field-row">
-              <div className="field-group">
-                <label htmlFor="firstName">First name</label>
-                <input
-                  id="firstName"
-                  name="firstName"
-                  type="text"
-                  placeholder="Jane"
-                  autoComplete="given-name"
-                  value={form.firstName}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <div className="field-group">
-                <label htmlFor="lastName">Last name</label>
-                <input
-                  id="lastName"
-                  name="lastName"
-                  type="text"
-                  placeholder="Doe"
-                  autoComplete="family-name"
-                  value={form.lastName}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
+          <div className="field-row">
+            <div className="field-group">
+              <label htmlFor="firstName">First name</label>
+              <input
+                id="firstName"
+                name="firstName"
+                type="text"
+                placeholder="Jane"
+                autoComplete="given-name"
+                value={form.firstName}
+                onChange={handleChange}
+                required
+              />
             </div>
+            <div className="field-group">
+              <label htmlFor="lastName">Last name</label>
+              <input
+                id="lastName"
+                name="lastName"
+                type="text"
+                placeholder="Doe"
+                autoComplete="family-name"
+                value={form.lastName}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          </div>
 
           <div className="field-group">
             <label htmlFor="email">Email</label>
@@ -116,7 +130,7 @@ export default function UserRegister() {
           <button type="submit" className="submit-btn">Create account</button>
           <p className="fine-print">By creating an account you agree to our terms & privacy policy.</p>
         </form>
-  <p className="switch-auth">Already have an account? <a href="/user/login">Sign in</a></p>
+        <p className="switch-auth">Already have an account? <a href="/user/login">Sign in</a></p>
       </div>
     </div>
   );
