@@ -52,21 +52,69 @@ async function getSellerProducts(req, res) {
 
 
 async function getAllProducts(req, res) {
+    try {
+        const page = req.query.page ? parseInt(req.query.page) : 1;
+        const limit = req.query.limit ? parseInt(req.query.limit) : 12;
+        const search = req.query.search ? req.query.search.trim() : '';
+        const sort = req.query.sort || 'newest';
 
-    const page = req.query.page ? parseInt(req.query.page) : 1;
+        const filter = {};
+        if (search) {
+            const regex = new RegExp(search, 'i');
+            filter.$or = [ { title: regex }, { description: regex } ];
+        }
 
-    const products = await productModel.find()
-        .skip((page - 1) * 5)
-        .limit(5)
+        let query = productModel.find(filter);
 
-    res.status(200).json({
-        message: "all products fetched successfully",
-        products
-    })
+        switch (sort) {
+            case 'price-asc':
+                query = query.sort({ 'price.amount': 1 });
+                break;
+            case 'price-desc':
+                query = query.sort({ 'price.amount': -1 });
+                break;
+            case 'stock':
+                query = query.sort({ stock: -1 });
+                break;
+            default: // newest
+                query = query.sort({ _id: -1 });
+        }
+
+        const total = await productModel.countDocuments(filter);
+        const products = await query
+            .skip((page - 1) * limit)
+            .limit(limit);
+
+        res.status(200).json({
+            message: "products fetched successfully",
+            products,
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit)
+        });
+    } catch (err) {
+        console.error('getAllProducts error', err);
+        res.status(500).json({ message: 'failed to fetch products' });
+    }
 }
 
+
+// New: get product by id
+async function getProductById(req, res) {
+    try {
+        const { id } = req.params;
+        const product = await productModel.findById(id);
+        if (!product) return res.status(404).json({ message: 'product not found' });
+        res.status(200).json({ message: 'product fetched successfully', product });
+    } catch (err) {
+        console.error('getProductById error', err);
+        res.status(500).json({ message: 'failed to fetch product' });
+    }
+}
 module.exports = {
     createProduct,
     getSellerProducts,
     getAllProducts,
+    getProductById
 }

@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './SellerLogin.css';
 import './UserRegister.css'; // reuse base auth styles
-import axios from 'axios';
+import api from '../api/client';
+import { useAuth } from '../context/AuthContext';
 
 export default function SellerLogin() {
   const [ form, setForm ] = useState({ identifier: '', password: '' });
   const role = 'seller';
+  const { refresh } = useAuth();
   const navigate = useNavigate();
 
   function handleChange(e) {
@@ -26,11 +28,8 @@ export default function SellerLogin() {
       data.username = form.identifier
     }
 
-    axios.post("http://localhost:3000/api/auth/seller/login",data,{withCredentials:true})
-    .then(response => {
-      console.log(response.data)
-      navigate('/seller/dashboard');
-    })
+  api.post("/api/auth/seller/login",data)
+  .then(response => { console.log(response.data); refresh(); navigate('/seller/dashboard'); })
 
   }
 

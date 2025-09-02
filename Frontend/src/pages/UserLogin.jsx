@@ -2,12 +2,14 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './UserLogin.css';
 import './UserRegister.css'; // reuse base auth styles
-import axios from 'axios';
+import api from '../api/client';
+import { useAuth } from '../context/AuthContext';
 
 export default function UserLogin() {
   const [ form, setForm ] = useState({ identifier: '', password: '' });
   const navigate = useNavigate();
   const role = 'user';
+  const { refresh } = useAuth();
 
   function handleChange(e) {
     const { name, value } = e.target;
@@ -25,13 +27,8 @@ export default function UserLogin() {
       data.username = form.identifier
     }
 
-    axios.post("http://localhost:3000/api/auth/user/login", data,{
-      withCredentials: true
-    })
-    .then(response => {
-      console.log(response.data)
-      navigate('/home');
-    })
+  api.post("/api/auth/user/login", data)
+  .then(response => { console.log(response.data); refresh(); navigate('/home'); })
   }
 
   function switchRole(nextRole) {

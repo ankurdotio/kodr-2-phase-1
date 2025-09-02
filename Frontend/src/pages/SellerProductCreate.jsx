@@ -1,14 +1,21 @@
 import { useState, useRef } from 'react';
 import './SellerProductCreate.css';
+import api from '../api/client';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
-// UI only – no API call logic. Placeholder submit handler.
 export default function SellerProductCreate() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priceAmount, setPriceAmount] = useState('');
   const [currency, setCurrency] = useState('INR');
   const [stock, setStock] = useState('');
   const [images, setImages] = useState([]); // { id, file, url }
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
   const fileInputRef = useRef(null);
 
   function handleImagesSelected(filesList) {
@@ -28,22 +35,33 @@ export default function SellerProductCreate() {
     setImages(prev => prev.filter(img => img.id !== id));
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    // Build payload (UI only)
-    const payload = {
-      title,
-      description,
-      price: { amount: Number(priceAmount), currency },
-      stock: Number(stock),
-      images: images.map(i => i.file?.name || i.url)
-    };
-    // No actual API call – just log for development.
-    console.log('Create product payload (UI only):', payload);
+    if (!user || user.role !== 'seller') { setError('Seller login required'); return; }
+    try {
+      setSubmitting(true); setError(''); setSuccess(false);
+      const formData = new FormData();
+      formData.append('title', title);
+      formData.append('description', description);
+      formData.append('price', JSON.stringify({ amount: Number(priceAmount), currency }));
+      formData.append('stock', stock);
+      images.forEach(img => { if (img.file) formData.append('images', img.file); });
+  await api.post('/api/products', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+      setSuccess(true);
+      // optional: navigate to dashboard or product page
+      navigate('/seller/dashboard');
+    } catch (err) {
+      const msg = err?.response?.data?.message || 'Failed to create product';
+      setError(msg);
+    } finally { setSubmitting(false); }
   }
 
   const priceError = priceAmount !== '' && Number(priceAmount) <= 0;
   const stockError = stock !== '' && Number(stock) < 0;
+
+  if (!user || user.role !== 'seller') {
+    return <div className="product-create-wrapper role-seller"><p>Seller access required.</p></div>;
+  }
 
   return (
     <div className="product-create-wrapper role-seller" aria-labelledby="product-create-heading">
@@ -51,6 +69,8 @@ export default function SellerProductCreate() {
         <h1 id="product-create-heading">Add new product</h1>
         <p className="product-create-sub">Provide product details below. Fields marked with * are required.</p>
       </header>
+      {error && <div className="alert error" role="alert">{error}</div>}
+      {success && <div className="alert success" role="status">Product created successfully.</div>}
 
       <form className="pc-form" onSubmit={handleSubmit} noValidate>
         <div className="pc-field">
@@ -117,7 +137,7 @@ export default function SellerProductCreate() {
         <hr className="divider" />
         <div className="actions-bar">
           <button type="button" className="btn secondary" onClick={()=>{ setTitle(''); setDescription(''); setPriceAmount(''); setCurrency('INR'); setStock(''); images.forEach(i=>URL.revokeObjectURL(i.url)); setImages([]); }}>Reset</button>
-          <button type="submit" className="btn" disabled={!title || !description || !priceAmount || priceError || stockError || !images.length}>Create Product</button>
+          <button type="submit" className="btn" disabled={submitting || !title || !description || !priceAmount || priceError || stockError || !images.length}>{submitting ? 'Creating…' : 'Create Product'}</button>
         </div>
       </form>
     </div>

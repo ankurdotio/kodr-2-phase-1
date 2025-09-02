@@ -1,9 +1,12 @@
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useState, useCallback } from 'react';
+import { useAuth } from '../context/AuthContext';
 
 export default function Navigation() {
   const { pathname } = useLocation();
-  const isSeller = pathname.startsWith('/seller');
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const isSeller = user?.role === 'seller' || pathname.startsWith('/seller');
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => { setDrawerOpen(false); }, [pathname]);
@@ -24,11 +27,8 @@ export default function Navigation() {
   }, [drawerOpen, handleEsc]);
 
   const userLinks = [ { to: '/home', label: 'Home' } ];
-  const sellerLinks = [
-    { to: '/seller/dashboard', label: 'Dashboard' },
-    { to: '/seller/products/create', label: 'Add Product' },
-  ];
-  const links = isSeller ? sellerLinks : userLinks;
+  const sellerLinks = [ { to: '/seller/dashboard', label: 'Dashboard' }, { to: '/seller/products/create', label: 'Add Product' } ];
+  const links = (user?.role === 'seller') ? sellerLinks : userLinks;
 
   // Role switch removed per request; navigation reflects current path only.
 
@@ -46,8 +46,17 @@ export default function Navigation() {
         </ul>
         <div className="spacer" />
         <div className="auth-links">
-          {!isSeller && <a href="/user/login">Login</a>}
-          {isSeller && <a href="/seller/login">Login</a>}
+          {user ? (
+            <>
+              <span style={{fontSize:'.65rem'}}>Hi, {user.fullName?.firstName || user.username}</span>
+              <button style={{fontSize:'.6rem'}} onClick={()=>{ logout(); navigate('/home'); }}>Logout</button>
+            </>
+          ) : (
+            <>
+              <a href="/user/login">Login</a>
+              <a href="/user/register">Register</a>
+            </>
+          )}
         </div>
       </div>
 
@@ -67,8 +76,14 @@ export default function Navigation() {
           </ul>
         </nav>
         <div className="drawer-auth">
-          {!isSeller && <a href="/user/login">Login</a>}
-          {isSeller && <a href="/seller/login">Login</a>}
+          {user ? (
+            <button onClick={()=>{ logout(); navigate('/home'); }}>Logout</button>
+          ) : (
+            <>
+              <a href="/user/login">Login</a>
+              <a href="/user/register">Register</a>
+            </>
+          )}
         </div>
       </aside>
     </nav>

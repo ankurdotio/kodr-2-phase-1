@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './UserRegister.css';
-import axios from 'axios';
+import api from '../api/client';
 
 export default function UserRegister() {
   const [ form, setForm ] = useState({
@@ -22,7 +22,7 @@ export default function UserRegister() {
   function handleSubmit(e) {
     e.preventDefault();
 
-    axios.post("http://localhost:3000/api/auth/user/register", {
+  api.post("/api/auth/user/register", {
       username: form.username,
       fullName: {
         firstName: form.firstName,
@@ -30,7 +30,7 @@ export default function UserRegister() {
       },
       email: form.email,
       password: form.password
-    },{withCredentials:true}).then(response => {
+  }).then(response => {
       console.log(response.data)
       navigate('/home');
     })

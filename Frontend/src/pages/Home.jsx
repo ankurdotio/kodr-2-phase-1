@@ -1,69 +1,54 @@
-import { useMemo, useState,useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './Home.css';
-import axios from "axios"
+import api from "../api/client"
 
-// UI only: sample products similar shape to seller endpoint
-const sampleProducts = [
-  {
-    _id: 'p1',
-    title: 'test_product',
-    description: 'test_description',
-    price: { amount: 999, currency: 'INR' },
-    images: ['https://ik.imagekit.io/hnoglyswo0/kodr_phase_1/faac7bd7-de98-41c6-81ee-1662f17e7ac5_p8DgQjfuxw'],
-    stock: 20
-  },
-  {
-    _id: 'p2',
-    title: 'Minimal Backpack',
-    description: 'Durable & water resistant everyday carry.',
-    price: { amount: 4599, currency: 'INR' },
-    images: ['https://images.unsplash.com/photo-1514474959185-1472d4d4b221?auto=format&fit=crop&w=600&q=60'],
-    stock: 4
-  },
-  {
-    _id: 'p3',
-    title: 'Ceramic Mug',
-    description: 'Hand glazed stoneware mug 350ml.',
-    price: { amount: 1299, currency: 'INR' },
-    images: ['https://images.unsplash.com/photo-1556909114-6d2a7926f397?auto=format&fit=crop&w=600&q=60'],
-    stock: 0
-  },
-  {
-    _id: 'p4',
-    title: 'Wireless Earbuds',
-    description: 'Noise isolating Bluetooth 5.3 earbuds.',
-    price: { amount: 8999, currency: 'INR' },
-    images: ['https://images.unsplash.com/photo-1585386959984-a4155222cd05?auto=format&fit=crop&w=600&q=60'],
-    stock: 37
-  }
-];
+
 
 export default function Home() {
+  const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState('newest');
-  const [products, setProducts] = useState([])
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  useEffect(()=>{
+  // Debounce search+sort+page fetch
+  useEffect(() => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => {
+      (async () => {
+        try {
+          setLoading(true);
+          setError('');
+          const params = new URLSearchParams({
+            page: String(page),
+            limit: '12',
+            sort,
+          });
+          if (query.trim()) params.append('search', query.trim());
+          const url = `/api/products?${params.toString()}`;
+          const res = await api.get(url, { signal: controller.signal });
+          setProducts(res.data.products || []);
+          setTotalPages(res.data.totalPages || 1);
+        } catch (err) {
+          if (err?.name === 'CanceledError') return;
+          setError('Failed to load products');
+        } finally {
+          setLoading(false);
+        }
+      })();
+    }, 300); // debounce 300ms
+    return () => { clearTimeout(timer); controller.abort(); };
+  }, [query, sort, page]);
 
-    axios.get("http://localhost:3000/api/products/")
-    .then(response=>{
-      setProducts(response.data.products)
-    })
-    
-  })
+  // Reset page when query or sort changes
+  useEffect(() => { setPage(1); }, [query, sort]);
   
   
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    let list = products.filter(p => !q || p.title.toLowerCase().includes(q) || (p.description||'').toLowerCase().includes(q));
-    switch (sort) {
-      case 'price-asc': list = [...list].sort((a,b)=>a.price.amount - b.price.amount); break;
-      case 'price-desc': list = [...list].sort((a,b)=>b.price.amount - a.price.amount); break;
-      case 'stock': list = [...list].sort((a,b)=>b.stock - a.stock); break;
-      default: break; // newest placeholder
-    }
-    return list;
-  }, [query, sort]);
+  const filtered = products; // server already filtered/sorted
 
   return (
     <div className="home-shell" aria-labelledby="home-heading">
@@ -88,35 +73,62 @@ export default function Home() {
             <option value="stock">Stock</option>
           </select>
         </div>
-        <div style={{fontSize:'.65rem', color:'var(--color-text-soft)'}} aria-live="polite">{filtered.length} products</div>
+        <div style={{fontSize:'.65rem', color:'var(--color-text-soft)'}} aria-live="polite">
+          {loading ? 'Loading…' : `${filtered.length} products`}
+        </div>
       </div>
-
-      {products.length === 0 ? (
+      {error && (
+        <div className="empty" role="alert">
+          <strong>Error</strong>
+          {error}
+        </div>
+      )}
+      {!error && !loading && products.length === 0 && (
         <div className="empty" role="status">
           <strong>No products</strong>
           Try adjusting your search or filters.
         </div>
-      ) : (
-        <div className="products-grid" role="list" aria-label="Products">
-          {products.map(p => {
-            const cover = p.images?.[0];
-            const priceFmt = new Intl.NumberFormat('en-IN',{style:'currency', currency:p.price.currency}).format(p.price.amount/100);
-            const low = p.stock < 5;
-            return (
-              <article key={p._id} className="p-card" role="listitem" aria-label={p.title}>
-                {cover ? <img src={cover} alt={p.title} className="p-thumb" loading="lazy" /> : <div className="p-thumb" aria-hidden="true" />}
-                <div className="p-body">
-                  <h3 className="p-title" title={p.title}>{p.title}</h3>
-                  <p className="p-desc" title={p.description}>{p.description}</p>
-                  <div className="p-price-row">
-                    <span className="p-price">{priceFmt}</span>
-                    <span className={`p-stock ${low ? 'low' : ''}`}>{p.stock > 0 ? `${p.stock} in stock` : 'Out of stock'}</span>
-                  </div>
+      )}
+      <div className="products-grid" role="list" aria-label="Products" aria-busy={loading}>
+        {products.map(p => {
+          const cover = p.images?.[0];
+          const priceFmt = new Intl.NumberFormat('en-IN',{style:'currency', currency:p.price.currency}).format(p.price.amount/100);
+          const low = p.stock < 5;
+          return (
+            <article
+              key={p._id}
+              className="p-card"
+              role="listitem"
+              aria-label={p.title}
+              tabIndex={0}
+              onClick={() => navigate(`/product/${p._id}`)}
+              onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/product/${p._id}`); } }}
+              style={{cursor:'pointer'}}
+            >
+              {cover ? <img src={cover} alt={p.title} className="p-thumb" loading="lazy" /> : <div className="p-thumb" aria-hidden="true" />}
+              <div className="p-body">
+                <h3 className="p-title" title={p.title}>{p.title}</h3>
+                <p className="p-desc" title={p.description}>{p.description}</p>
+                <div className="p-price-row">
+                  <span className="p-price">{priceFmt}</span>
+                  <span className={`p-stock ${low ? 'low' : ''}`}>{p.stock > 0 ? `${p.stock} in stock` : 'Out of stock'}</span>
                 </div>
-              </article>
-            );
-          })}
-        </div>
+              </div>
+            </article>
+          );
+        })}
+        {loading && products.length === 0 && (
+          <div className="empty" role="status" style={{gridColumn:'1/-1'}}>
+            Loading products…
+          </div>
+        )}
+      </div>
+      {!error && totalPages > 1 && (
+        <nav className="pager" aria-label="Pagination">
+          <button disabled={page===1} onClick={()=>setPage(p=>p-1)} aria-label="Previous page">Prev</button>
+          <span style={{fontSize:'.7rem'}}>Page {page} / {totalPages}</span>
+          <button disabled={page===totalPages} onClick={()=>setPage(p=>p+1)} aria-label="Next page">Next</button>
+        </nav>
       )}
     </div>
   );

@@ -10,13 +10,15 @@ import SellerProductCreate from './pages/SellerProductCreate';
 import ProductDetails from './pages/ProductDetails';
 import AppLayout from './layouts/AppLayout';
 import './App.css'
+import AuthProvider from './context/AuthContext';
 
 function App() {
 
 
   return (
-   <BrowserRouter>
-      <Routes>
+  <AuthProvider>
+  <BrowserRouter>
+    <Routes>
         {/* Auth routes (outside layout if desired) */}
         <Route path="/user/login" element={<UserLogin />} />
         <Route path="/user/register" element={<UserRegister />} />
@@ -32,6 +34,7 @@ function App() {
         </Route>
       </Routes>
     </BrowserRouter>
+    </AuthProvider>
   )
 }
 
