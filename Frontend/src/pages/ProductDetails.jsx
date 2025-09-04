@@ -2,6 +2,7 @@ import { useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import './ProductDetails.css';
 import api from '../api/client';
+import axios from 'axios';
 
 export default function ProductDetails() {
   const { id } = useParams();
@@ -26,6 +27,46 @@ export default function ProductDetails() {
     if (id) load();
     return () => { cancelled = true; };
   }, [id]);
+
+  async function handleBuy() {
+
+    const response = await axios.post(`http://localhost:3000/api/payments/create/${id}`,{}, { withCredentials: true })
+
+    console.log(response.data)
+
+     const options = {
+        key: "rzp_test_jFm6yLzfwSZQld", // from .env (frontend can use only key_id)
+        amount: response.data.order.price.amount,
+        currency: response.data.order.price.currency,
+        name: "My Company",
+        description: "Test Transaction",
+        order_id: response.data.order.orderId,
+        handler: async function (response) {
+          console.log(response);
+          
+          axios.post("http://localhost:3000/api/payments/verify", {
+            razorpayOrderId:response.razorpay_order_id, razorpayPaymentId:response.razorpay_payment_id, signature:response.razorpay_signature
+          },{withCredentials:true}).then(response=>{
+            console.log(response.data)
+          }).catch(err=>{
+            console.log(err)
+          })
+          
+          
+        },
+        prefill: {
+          name: response.data.user.fullName.firstName + ' ' + response.data.user.fullName.lastName,
+          email: response.data.user.email,
+        },
+        theme: {
+          color: "#3399cc"
+        }
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+
+  }
 
   if (loading) return <div className="pd-shell"><p>Loading…</p></div>;
   if (error) return <div className="pd-shell"><p>{error}</p></div>;
@@ -59,7 +100,7 @@ export default function ProductDetails() {
         <div className="pd-price" aria-live="polite">{priceFmt}</div>
         <p className="pd-desc">{product.description}</p>
         <div className="pd-actions">
-            <button className="btn-buy" disabled={out}>{out ? 'Unavailable' : 'Buy now'}</button>
+            <button onClick={handleBuy} className="btn-buy" disabled={out}>{out ? 'Unavailable' : 'Buy now'}</button>
         </div>
         <div className="pd-meta">
           <span><strong>ID:</strong> {product._id}</span>
